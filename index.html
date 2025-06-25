@@ -1,1 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Infinity Casino</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { background-color: #0d0d0d; color: #fff; }
+    .card { background-color: #1a1a1a; border-radius: 1rem; padding: 1rem; margin: 1rem auto; max-width: 400px; box-shadow: 0 0 10px #000; }
+    .btn { background: #3b82f6; padding: 0.5rem 1rem; border-radius: 0.5rem; color: white; font-weight: bold; }
+    .btn:hover { background: #2563eb; }
+  </style>
+</head>
+<body class="text-center">
 
+  <header class="py-6 bg-gray-900 text-white">
+    <h1 class="text-3xl font-bold">🎰 Infinity Casino</h1>
+    <div id="user-bar" class="mt-2 text-sm"></div>
+  </header>
+
+  <main class="p-4" id="app">
+    <!-- Login/Register -->
+    <div class="card" id="auth-card">
+      <h2 class="text-xl font-bold mb-2">Login</h2>
+      <input type="text" id="username" placeholder="Username" class="p-2 rounded w-full mb-2 bg-gray-800 text-white">
+      <input type="password" id="password" placeholder="Password" class="p-2 rounded w-full mb-4 bg-gray-800 text-white">
+      <button class="btn w-full" onclick="login()">Enter Casino</button>
+    </div>
+  </main>
+
+  <script>
+    let user = null;
+    let balance = 1000;
+
+    function login() {
+      const username = document.getElementById("username").value;
+      if (!username) return alert("Enter username");
+      user = username;
+      document.getElementById("user-bar").innerHTML = `👤 ${user} | 💰 $${balance} <button onclick="logout()" class="ml-2 text-red-400 underline">Logout</button>`;
+      renderLobby();
+    }
+
+    function logout() {
+      user = null;
+      balance = 1000;
+      location.reload();
+    }
+
+    function updateBalance(amount) {
+      balance += amount;
+      document.getElementById("user-bar").innerHTML = `👤 ${user} | 💰 $${balance} <button onclick="logout()" class="ml-2 text-red-400 underline">Logout</button>`;
+    }
+
+    function renderLobby() {
+      document.getElementById("app").innerHTML = `
+        <div class="card">
+          <h2 class="text-xl font-bold">💳 Wallet</h2>
+          <input type="number" id="amount" placeholder="Amount" class="p-2 rounded w-full bg-gray-800 text-white mb-2">
+          <button class="btn w-full mb-2" onclick="deposit()">Deposit</button>
+          <button class="btn w-full bg-red-500 hover:bg-red-600" onclick="withdraw()">Withdraw</button>
+        </div>
+
+        <div class="card">
+          <h2 class="text-xl font-bold">🎰 Slot Machine</h2>
+          <button class="btn w-full mb-2" onclick="playSlot()">Spin ($50)</button>
+          <div id="slot-result"></div>
+        </div>
+
+        <div class="card">
+          <h2 class="text-xl font-bold">🎲 Dice Game</h2>
+          <button class="btn w-full mb-2" onclick="playDice()">Roll ($20)</button>
+          <div id="dice-result"></div>
+        </div>
+
+        <div class="card">
+          <h2 class="text-xl font-bold">🪙 Coinflip</h2>
+          <select id="coin-choice" class="w-full p-2 bg-gray-800 text-white rounded mb-2">
+            <option value="Heads">Heads</option>
+            <option value="Tails">Tails</option>
+          </select>
+          <button class="btn w-full" onclick="playCoin()">Flip ($30)</button>
+          <div id="coin-result"></div>
+        </div>
+
+        <div class="card">
+          <h2 class="text-xl font-bold">🎯 Roulette</h2>
+          <select id="roulette-bet" class="w-full p-2 bg-gray-800 text-white rounded mb-2">
+            <option value="Red">Red</option>
+            <option value="Black">Black</option>
+            <option value="Green">Green</option>
+          </select>
+          <button class="btn w-full" onclick="playRoulette()">Spin ($40)</button>
+          <div id="roulette-result"></div>
+        </div>
+      `;
+    }
+
+    function deposit() {
+      const amount = parseFloat(document.getElementById("amount").value);
+      if (isNaN(amount) || amount <= 0) return alert("Invalid amount");
+      updateBalance(amount);
+    }
+
+    function withdraw() {
+      const amount = parseFloat(document.getElementById("amount").value);
+      if (isNaN(amount) || amount <= 0 || amount > balance) return alert("Invalid withdrawal");
+      updateBalance(-amount);
+    }
+
+    function playSlot() {
+      if (balance < 50) return alert("Not enough balance");
+      updateBalance(-50);
+      const symbols = ['🍒', '🍋', '🔔', '💎', '🍇'];
+      const roll = Array.from({length: 3}, () => symbols[Math.floor(Math.random() * symbols.length)]);
+      const win = roll[0] === roll[1] && roll[1] === roll[2];
+      if (win) updateBalance(300);
+      document.getElementById("slot-result").innerHTML = roll.join(' ') + `<br>${win ? '🎉 You win $300!' : 'You lost.'}`;
+    }
+
+    function playDice() {
+      if (balance < 20) return alert("Not enough balance");
+      updateBalance(-20);
+      const roll = Math.ceil(Math.random() * 6);
+      const win = roll >= 5;
+      if (win) updateBalance(100);
+      document.getElementById("dice-result").innerHTML = `You rolled: ${roll} <br>${win ? '🎉 You win $100!' : 'You lost.'}`;
+    }
+
+    function playCoin() {
+      if (balance < 30) return alert("Not enough balance");
+      updateBalance(-30);
+      const choice = document.getElementById("coin-choice").value;
+      const result = Math.random() < 0.5 ? "Heads" : "Tails";
+      const win = choice === result;
+      if (win) updateBalance(60);
+      document.getElementById("coin-result").innerHTML = `Result: ${result} <br>${win ? '🎉 You win $60!' : 'You lost.'}`;
+    }
+
+    function playRoulette() {
+      if (balance < 40) return alert("Not enough balance");
+      updateBalance(-40);
+      const bet = document.getElementById("roulette-bet").value;
+      const chance = Math.random();
+      let result = "Green";
+      if (chance < 0.48) result = "Red";
+      else if (chance < 0.96) result = "Black";
+      let payout = 0;
+      if (bet === result) payout = result === "Green" ? 500 : 80;
+      updateBalance(payout);
+      document.getElementById("roulette-result").innerHTML = `Landed on: ${result} <br>${payout > 0 ? `🎉 You win $${payout}!` : 'You lost.'}`;
+    }
+  </script>
+
+</body>
+</html>
